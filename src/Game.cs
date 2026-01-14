@@ -1,17 +1,25 @@
 using System;
+using System.Linq.Expressions;
+using System.Net;
+using System.Runtime.CompilerServices;
+using System.Security;
 
 class Game
 {
 	// Private fields
 	private Parser parser;
-	private Room currentRoom;
+
+	private Player player;
 
 	// Constructor
+	
 	public Game()
 	{
 		parser = new Parser();
+		player = new Player();
 		CreateRooms();
 	}
+	
 
 	// Initialise the Rooms (and the Items)
 	private void CreateRooms()
@@ -22,13 +30,23 @@ class Game
 		Room pub = new Room("in the campus pub");
 		Room lab = new Room("in a computing lab");
 		Room office = new Room("in the computing admin office");
+		Room attic = new Room("in the attic");
+		Room basement = new Room("in the basement");
 
 		// Initialise room exits
 		outside.AddExit("east", theatre);
 		outside.AddExit("south", lab);
 		outside.AddExit("west", pub);
 
+
 		theatre.AddExit("west", outside);
+		theatre.AddExit("up", attic);
+		theatre.AddExit("down", outside);
+
+		basement.AddExit("up", theatre);
+
+		attic.AddExit("down", theatre);
+
 
 		pub.AddExit("east", outside);
 
@@ -43,7 +61,7 @@ class Game
 		// ...
 
 		// Start game outside
-		currentRoom = outside;
+		(player.CurrentRoom) = outside;
 	}
 
 	//  Main play routine. Loops until end of play.
@@ -58,6 +76,12 @@ class Game
 		{
 			Command command = parser.GetCommand();
 			finished = ProcessCommand(command);
+			
+			if(player.health == 0)
+			{
+				Console.WriteLine("you died bitch");
+				finished = true;
+			}
 		}
 		Console.WriteLine("Thank you for playing.");
 		Console.WriteLine("Press [Enter] to continue.");
@@ -72,7 +96,7 @@ class Game
 		Console.WriteLine("Zuul is a new, incredibly boring adventure game.");
 		Console.WriteLine("Type 'help' if you need help.");
 		Console.WriteLine();
-		Console.WriteLine(currentRoom.GetLongDescription());
+		Console.WriteLine((player.CurrentRoom).GetLongDescription());
 	}
 
 	// Given a command, process (that is: execute) the command.
@@ -95,13 +119,25 @@ class Game
 				break;
 			case "go":
 				GoRoom(command);
+				player.health -=10;
+				lowhp();
 				break;
 			case "look":
-				Console.WriteLine(currentRoom.GetLongDescription());
+				Console.WriteLine((player.CurrentRoom).GetLongDescription());
 				break;
+			case "status":
+				status();
+			break;
+			case "heal":
+				heal();
+			break;
+			case "die":
+				die();
+			break;
 			case "quit":
 				wantToQuit = true;
 				break;
+
 		}
 
 		return wantToQuit;
@@ -136,15 +172,48 @@ class Game
 		string direction = command.SecondWord;
 
 		// Try to go to the next room.
-		Room nextRoom = currentRoom.GetExit(direction);
+		Room nextRoom = (player.CurrentRoom).GetExit(direction);
 		if (nextRoom == null)
 		{
 			Console.WriteLine("There is no door to "+direction+"!");
 			return;
 		}
 
-		currentRoom = nextRoom;
-		Console.WriteLine(currentRoom.GetLongDescription());
+		(player.CurrentRoom) = nextRoom;
+		Console.WriteLine((player.CurrentRoom).GetLongDescription());
+	}
+	private void lowhp()
+	{
+		if (player.health <= 50 && player.health >= 30)
+		{
+			Console.WriteLine("you suck");
+		}
+	
+	else if(player.health <= 20)
+	{
+		Console.WriteLine("you are almost dead bitch");
+	}
+	}
+	private void status()
+	{
+		Console.Write($"your health is {player.health}HP");
+	}
+	private void heal()
+	{
+		if(player.health <= 60)
+		{
+			player.health += 20;
+		}
+		else
+		{
+			Console.WriteLine("you got a sexy HP cutie ;) ");
+		}
+	}
+	private void die()
+	{
+		player.health = 0 ;
+		Console.WriteLine("you need thearpy , you really suck , burn in hell");
 	}
 }
+
 
