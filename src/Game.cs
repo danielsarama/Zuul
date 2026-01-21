@@ -56,6 +56,8 @@ class Game
 		office.AddExit("west", lab);
 
 		// Create your Items here
+		Item lgbt_flag = new Item (5, "lgbt_flag");
+		
 		// ...
 		// And add them to the Rooms
 		// ...
@@ -123,7 +125,7 @@ class Game
 				lowhp();
 				break;
 			case "look":
-				Console.WriteLine((player.CurrentRoom).GetLongDescription());
+				look();
 				break;
 			case "status":
 				status();
@@ -214,6 +216,12 @@ class Game
 		player.health = 0 ;
 		Console.WriteLine("you need thearpy , you really suck , burn in hell");
 	}
+
+	private void look()
+	{
+	Console.WriteLine((player.CurrentRoom).GetLongDescription());
+	}
+
 }
 
 
